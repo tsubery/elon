@@ -1,6 +1,6 @@
 # Cancelling Bitcoin - Definitive How To guide
 ## TLDR
-Bitcoin wastes immense amounts of energy. It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society, using the described tools to create long running outages of Bitcoin's network and/or network splits that may cause transactions to be rolled back. Since no one wants to have their assets sieged at will by an angry mob, this situation jeopardizes Bitcoin's price. Many professionals are aware and have been warning about these issues. Hackers would like to keep the following information out of sight because it might kill their ransomware golden goose.
+Bitcoin wastes immense amounts of energy. It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society, using the methods described below to create long running outages of Bitcoin's network and/or network splits that may cause transactions to be rolled back. Since no one wants to have their assets sieged at will by an angry mob, this situation jeopardizes Bitcoin's price. Many professionals are aware and have been warning about these issues. Hackers would like to keep the following information out of sight because it might kill their ransomware golden goose.
 
 ## Overview
 
