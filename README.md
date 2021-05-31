@@ -14,7 +14,7 @@ The myth that Bitcoin's network has massive capacities relies on technical sligh
 2. Wallet Nodes - These are typically short lived nodes, they do not store the full database of around 360GB at the time of writing. These nodes do not publish "NETWORK_NODE" bit to to inform other participants of their limited capacity. 
 3. Miner Nodes - These nodes encompass the majority of resources of the network. Since mining is done in private these are not a target for crowd sourced attack and are irrelevant for the purpose of this article.
 
-It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have been starved of resources. For a reasonable attacker miners and their separate network are irrelevant.
+It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their separate network are irrelevant.
 
 ### Full-node resources
 Many are aware of block size wars, where Bitcoin's development team chose to limit the resources needed from each full node in order to lower the barriers for entry for full nodes. There are other limitations in the reference full node implemenation. Limiting node's capacity makes each node vulnerable to various denial of services attacks. Some of the [capacities](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h) of Full Nodes are:
@@ -104,8 +104,8 @@ I have a full node running on my dev environment for testing. It is configured n
 ### L7 attacks
 While the tools above are enough for activists to create outages. Bitcoin has many vulnerabilities in the application layer too. Since the protocol is not encrypted, any party between two nodes can manipulate communication. This was done in the [past](https://www.eff.org/es/wp/packet-forgery-isps-report-comcast-affair) by ISPs in order to restrict Bittorrent. We can be sure that the DPI technology that was used to do that has advanced since inception 20 years ago. A naive solution to L7 attacks would be to block peers that spam or send garbage. The problem is ISPs, governments or even Tor exit node can perform the flagged behavior causing peers to be blocked. Bitcoin solution is to sweep all these vectors of attack under the rug and focus on hype and marketing.
 
-#### Scraper
-In order to have indepnedent clear visibility into the network, it's better to write our own scraper. It will recoursively ask nodes for their peers until no new peers are discovered. Connecting to a node only to ask for a list of peers is an integral part of the how the reference implementation works. When a full node has no new peers to try it uses these [dns seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. These DNS entries are centrally controlled by some [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
+#### Crawler
+In order to have indepnedent visibility into the network, we will write our own scraper. It will recoursively ask nodes for their peers until no new peers are discovered. Connecting to a node only to ask for a list of peers is an integral part of the how the reference implementation works. When a full node launches for the [first time or runs out of peers](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.cpp#L1608) it uses these [dns seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. These DNS entries are centrally controlled by some [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
 ```cpp
 vSeeds.emplace_back("seed.bitcoin.sipa.be"); // Pieter Wuille
 vSeeds.emplace_back("dnsseed.bluematt.me"); // Matt Corallo
@@ -117,7 +117,14 @@ vSeeds.emplace_back("seed.bitcoin.sprovoost.nl"); // Sjors Provoost
 vSeeds.emplace_back("dnsseed.emzy.de"); // Stephan Oeste
 vSeeds.emplace_back("seed.bitcoin.wiz.biz"); // Jason Maurice
 ````
-They can easily collude and send some wallets of their choosing to a subnetwork under their complete control but this is besides the point of this paragraph.
+Because no one bothered implementing [partition detection](https://paulkernfeld.com/2016/01/15/bitcoin-cap-theorem.html), they can easily collude and send some wallets of their choosing to a subnetwork under their complete control but this is besides the point of this paragraph.
 Activists can follow the pattern of soliciting addresses but more aggressively. Soliciting is much cheaper computationally than generating the responses so it's a more effective way of attacking the network than simply opening connections.
-In order to solicit addresses a client needs to complete a proper handshake. Client connects to a server, must send a version message then wait for a similar version message from server. Then it can send several signaling messages coordinating supported features followed by verack message. Server does the same and connection is considered [SuccsefullyConnected](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net_processing.cpp#L2648). 
-Latest version as of writing is 70016. Every message is wrapped in header containing magic number that indicates network (main/test etc), checksum & message size. Since the C++ code can be difficult to read, i use the python test suite for reference about message types. For example, this is how a [version message](https://github.com/bitcoin/bitcoin/blob/b34bf2b42caaee7c8714c1229e877128916d914a/test/functional/test_framework/messages.py#L1018) can be constructed.
+##### The protocol
+In order to initiate a bitcoin conneciton the following has to occur in order after tcp connection is established.
+1. Client sends Version message.
+2. Server sends Version message.
+3. Server & client optionally sends messages to signal feature support
+4. Client & Server send Verack (version acknoledgement).
+
+At this point the connection is considered [SuccsefullyConnected](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net_processing.cpp#L2648) and the client may send Getaddr message in order to request list of peers.
+Every message is wrapped in header containing magic number that indicates network (main/test etc), checksum & message size. Since the C++ code can be difficult to read, i use the python test suite for reference about message types. For example, this is how a [version message](https://github.com/bitcoin/bitcoin/blob/b34bf2b42caaee7c8714c1229e877128916d914a/test/functional/test_framework/messages.py#L1018) can be constructed.
