@@ -104,17 +104,18 @@ I have a full node running on my dev environment for testing. It is configured n
 While the tools above are enough for activists to create outages. Bitcoin has many vulnerabilities in the application layer too. Since the protocol is not encrypted, any party between two nodes can manipulate communication. This was done in the [past](https://www.eff.org/es/wp/packet-forgery-isps-report-comcast-affair) by ISPs in order to restrict Bittorrent. We can be sure that the DPI technology that was used to do that has advanced since inception 20 years ago. A naive solution to L7 attacks would be to block peers that spam or send garbage. The problem is ISPs, governments or even Tor exit node can perform the flagged behavior causing peers to be blocked. Bitcoin solution is to sweep all these vectors of attack under the rug and focus on hype and marketing.
 
 #### Scraper
-Connecting to a node only to ask for a list of peers they know is an integral part of the reference implementation works. When a full node has no new peers to try it uses [dns seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. DNS entries are controlled by a group of unknown people that we can call Bitcoin's IT department. This is what is shipped with the official client:
->vSeeds.emplace_back("seed.bitcoin.sipa.be"); // Pieter Wuille, only supports x1, x5, x9, and xd
->vSeeds.emplace_back("dnsseed.bluematt.me"); // Matt Corallo, only supports x9
->vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org"); // Luke Dashjr
->vSeeds.emplace_back("seed.bitcoinstats.com"); // Christian Decker, supports x1 - xf
->vSeeds.emplace_back("seed.bitcoin.jonasschnelli.ch"); // Jonas Schnelli, only supports x1, x5, x9, and xd
->vSeeds.emplace_back("seed.btc.petertodd.org"); // Peter Todd, only supports x1, x5, x9, and xd
->vSeeds.emplace_back("seed.bitcoin.sprovoost.nl"); // Sjors Provoost
->vSeeds.emplace_back("dnsseed.emzy.de"); // Stephan Oeste
->vSeeds.emplace_back("seed.bitcoin.wiz.biz"); // Jason Maurice
-
+In order to have indepnedent clear visibility into the network, it's better to write our own scraper. It will recoursively ask nodes for their peers until no new peers are discovered. Connecting to a node only to ask for a list of peers is an integral part of the how the reference implementation works. When a full node has no new peers to try it uses these [dns seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. These DNS entries are centrally controlled by some [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
+```cpp
+vSeeds.emplace_back("seed.bitcoin.sipa.be"); // Pieter Wuille
+vSeeds.emplace_back("dnsseed.bluematt.me"); // Matt Corallo
+vSeeds.emplace_back("dnsseed.bitcoin.dashjr.org"); // Luke Dashjr
+vSeeds.emplace_back("seed.bitcoinstats.com"); // Christian Decker
+vSeeds.emplace_back("seed.bitcoin.jonasschnelli.ch"); // Jonas Schnelli
+vSeeds.emplace_back("seed.btc.petertodd.org"); // Peter Todd
+vSeeds.emplace_back("seed.bitcoin.sprovoost.nl"); // Sjors Provoost
+vSeeds.emplace_back("dnsseed.emzy.de"); // Stephan Oeste
+vSeeds.emplace_back("seed.bitcoin.wiz.biz"); // Jason Maurice
+````
 They can easily collude and send some wallets of their choosing to a subnetwork under their complete control but this is besides the point of this paragraph.
 Activists can follow the pattern of soliciting addresses but more aggressively. Soliciting is much cheaper computationally than generating the responses so it's a more effective way of attacking the network than simply opening connections.
 In order to solicit addresses a client needs to complete a proper handshake. Client connects to a server, must send a version message then wait for a similar version message from server. Then it can send several signaling messages coordinating supported features followed by verack message. Server does the same and connection is considered [SuccsefullyConnected](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net_processing.cpp#L2648). 
