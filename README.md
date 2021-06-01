@@ -5,7 +5,7 @@ Bitcoin wastes immense amounts of energy. It's community is complicit with crime
 ## Overview
 
 Bitcoin's open nature is touted as a feature, allowing anyone with internet access to participate in various ways. Send & receive transactions or submit & receive information about the other participants in the network. In reality it is the achilles heel because activists can use that to cancel it in various ways. For example it would be easy to point out the hypocracy of Amazon providing services to nearly thousand bitcoin nodes while touting their [ESG goals](https://aws.amazon.com/blogs/enterprise-strategy/it-and-esg-part-two-how-it-can-and-must-further-the-companys-esg-efforts/) and buying [carbon credits](https://www.geekwire.com/2020/amazon-pledges-10m-forest-preservation-carbon-offsets-appalachians/). About 25%-30% of full-node servers are hosted in large hosting providers such as Amazon, Google, Microsoft, Hetzner, OVH, Linode & Digital Ocean. I suppose their terms of service are subject to [change at will](https://edition.cnn.com/2021/01/09/tech/parler-suspended-apple-app-store/index.html).
-Bitcoin [pollutes](https://digiconomist.net/) the world shared by all of us, some activists may decide to pollute back. They can flood the network with garbage information and consume all of it's availabe resources. Every network and computer system has limited resources such as bandwidth, memory and computing power. In order to estimate the risk, we need to estimate the different capacities in the system and find the ones that are the easiest to overwhelm.
+Bitcoin [pollutes](https://digiconomist.net/bitcoin-energy-consumption) the world shared by all of us, some activists may decide to pollute back. They can flood the network with garbage information and consume all of the availabe resources. Every network and computer system has limited resources such as bandwidth, memory and computing power. In order to estimate the risk, we need to estimate the different capacities in the system and find the ones that are the easiest to overwhelm.
 
 ## Estimating networks capacity
 The myth that Bitcoin's network has massive capacities relies on technical slight of hand. The network is comprised of three different nodes which contribute and consume different resources to the network.
@@ -14,7 +14,7 @@ The myth that Bitcoin's network has massive capacities relies on technical sligh
 2. Wallet Nodes - These are typically short lived nodes, they do not store the full database of around 360GB at the time of writing. These nodes do not publish "NETWORK_NODE" bit to to inform other participants of their limited capacity. 
 3. Miner Nodes - These nodes encompass the majority of resources of the network. Since mining is done in private these are not a target for crowd sourced attack and are irrelevant for the purpose of this article.
 
-It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their separate network are irrelevant.
+It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their network are irrelevant.
 
 ### Full-node resources
 Many are aware of block size wars, where Bitcoin's development team chose to limit the resources needed from each full node in order to lower the barriers for entry for full nodes. There are other limitations in the reference full node implemenation. Limiting node's capacity makes each node vulnerable to various denial of services attacks. Some of the [capacities](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h) of Full Nodes are:
@@ -119,6 +119,11 @@ vSeeds.emplace_back("seed.bitcoin.wiz.biz"); // Jason Maurice
 ````
 Because no one bothered implementing [partition detection](https://paulkernfeld.com/2016/01/15/bitcoin-cap-theorem.html), they can easily collude and send some wallets of their choosing to a subnetwork under their complete control but this is besides the point of this paragraph.
 Activists can follow the pattern of soliciting addresses but more aggressively. Soliciting is much cheaper computationally than generating the responses so it's a more effective way of attacking the network than simply opening connections.
+In order to imitate a full node of latest version we will generate messages using `msgmaker/make.rb`. The code is very simple, you are welcome to review it.
+```bash
+#!/bin/bash
+
+
 ##### The protocol
 In order to initiate a bitcoin conneciton the following has to occur in order after tcp connection is established.
 1. Client sends Version message.
