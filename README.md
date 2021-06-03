@@ -105,7 +105,7 @@ I have a full node running on my dev environment for testing. It is configured n
 While the tools above are enough for activists to create outages. Bitcoin has many vulnerabilities in the application layer too. Since the protocol is not encrypted, any party between two nodes can manipulate communication. This was done in the [past](https://www.eff.org/es/wp/packet-forgery-isps-report-comcast-affair) by ISPs in order to restrict Bittorrent. We can be sure that the DPI technology that was used to do that has advanced since inception 20 years ago. A naive solution to L7 attacks would be to block peers that spam or send garbage. The problem is ISPs, governments or even Tor exit node can perform the flagged behavior causing peers to be blocked. Bitcoin solution is to sweep all these vectors of attack under the rug and focus on hype and marketing.
 
 #### Crawler
-In order to have indepnedent visibility into the network, we will write our own scraper. It will recoursively ask nodes for their peers until no new peers are discovered. Connecting to a node only to ask for a list of peers is an integral part of the how the reference implementation works. When a full node launches for the [first time or runs out of peers](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.cpp#L1608) it uses these [dns seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. These DNS entries are centrally controlled by some [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
+In order to have indepnedent visibility into the network, we should use our own crawlerer. It will recoursively ask nodes for their peers until no new peers are discovered. Connecting to a node only to ask for a list of peers is an integral part of the how the reference implementation works. When a full node launches for the [first time or runs out of peers](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.cpp#L1608) it uses these [dns seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. These DNS entries are centrally controlled by some [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
 ```cpp
 vSeeds.emplace_back("seed.bitcoin.sipa.be"); // Pieter Wuille
 vSeeds.emplace_back("dnsseed.bluematt.me"); // Matt Corallo
@@ -119,10 +119,6 @@ vSeeds.emplace_back("seed.bitcoin.wiz.biz"); // Jason Maurice
 ````
 Because no one bothered implementing [partition detection](https://paulkernfeld.com/2016/01/15/bitcoin-cap-theorem.html), they can easily collude and send some wallets of their choosing to a subnetwork under their complete control but this is besides the point of this paragraph.
 Activists can follow the pattern of soliciting addresses but more aggressively. Soliciting is much cheaper computationally than generating the responses so it's a more effective way of attacking the network than simply opening connections.
-In order to imitate a full node of latest version we will generate messages using `msgmaker/make.rb`. The code is very simple, you are welcome to review it.
-```bash
-#!/bin/bash
-
 
 ##### The protocol
 In order to initiate a bitcoin conneciton the following has to occur in order after tcp connection is established.
@@ -133,3 +129,39 @@ In order to initiate a bitcoin conneciton the following has to occur in order af
 
 At this point the connection is considered [SuccsefullyConnected](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net_processing.cpp#L2648) and the client may send Getaddr message in order to request list of peers.
 Every message is wrapped in header containing magic number that indicates network (main/test etc), checksum & message size. Since the C++ code can be difficult to read, i use the python test suite for reference about message types. For example, this is how a [version message](https://github.com/bitcoin/bitcoin/blob/b34bf2b42caaee7c8714c1229e877128916d914a/test/functional/test_framework/messages.py#L1018) can be constructed.
+
+In this [repo](https://github.com/tsubery/cancelbitcoin), you can find an implementation of an aggressive crawler. You can run it by installing ruby then running the script `crawl.rb`
+```ruby
+#!/usr/bin/env ruby
+# frozen_string_literal: true
+
+require 'json'
+DEFAULT_BATCH_SIZE = 1000
+DEFAULT_BATCH_TIME = 30
+DEFAULT_LOGFILE = 'crawler.log'
+DEFAULT_OUTPUT_PATH = 'ips.json'
+
+require_relative 'crawler'
+crawler = Crawler.new(
+  batch_size: ARGV[0] || DEFAULT_BATCH_SIZE,
+  batch_time: ARGV[1] || DEFAULT_BATCH_TIME,
+  logfile: ARGV[2] || DEFAULT_LOGFILE
+)
+crawler.addrman.add_dns_seeds
+crawler.call
+
+store_data = crawler.addresses.map do |a|
+  {
+    'ip_address' => a.ip,
+    'port' => a.port,
+    'services' => a.services,
+    'network' => a.network
+  }
+end
+File.write(ARGV[4] || DEFAULT_OUTPUT_PATH, JSON.pretty_generate(store_data))
+```
+We can instantiate the crawler with our parameters such as `./crawl.rb 5000 45 output.log myips.json`. Keep in mind that getting to many thousands of connections probably requires to increasing system limitations such as described in tcpkali [readme](https://github.com/satori-com/tcpkali/blob/master/doc/tcpkali.man.md#sysctls-to-tune-the-system-to-be-able-to-open-more-connections). The script seeds the Crawler's address manager with dns seeds, then it tries to reach out to all fo them in batches of up to the configured batch_size. Inside crawler, we generate the the messages that mimic a full node, when it needs to refresh it's internal addresses. Since tcpkali is not designed for this purpose sometimes the returning packets get clobbered and we cannot parse the returned addresses. This is not an issue for this purpose because we prioritize speed over accuracy. With this crawler you can ask the addresses from the everyone in the network in matter of minutes so it's acceptable to lose some fraction.
+Another point to note is tcpkali has a [bug parsing ipv6 addresses](https://github.com/satori-com/tcpkali/pull/73). You're welcome to use my branch & compile it yourself if you want to scan ipv6 addresses using this crawler. I'll provide a docker image with all the code & tools as well.
+
+### Imitating nodes
+Now that we have dependable way to a get a list of targets, we can do some fun stuff with it. The idea is to compete for network resources with normal clients so we need to simulate real traffic. One way i found is to make a node speak to itself. We need to open two sockets to the same node, send the nodes version message to each of the sockets. After that we route messages back and forth between those sockets. The node thinks it is talking to two different peers, but receieves no new information and only wastes resources. This is rather cheap computationally for us because we do not need to parse any data. It's yet another way of consuming resources from the limited incoming connection pool. In order to imitate a full node of latest version we will generate messages using `msgmaker/make.rb`. The code is very simple, you are welcome to review it.
