@@ -1,11 +1,11 @@
 # Cancelling Bitcoin - Definitive How To guide
 ## TLDR
-Bitcoin wastes immense amounts of energy. It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society, using the methods described below to create long running outages of Bitcoin's network and/or network splits that may cause transactions to be rolled back. Since no one wants to have their assets sieged at will by an angry mob, this situation jeopardizes Bitcoin's price. Many professionals are aware and have been warning about these issues. Hackers would like to keep the following information out of sight because it might kill their ransomware golden goose.
+Bitcoin wastes immense amounts of energy. It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society, using the methods described below to create long running outages of Bitcoin's network. This would render private wallets unusable for long periods at a time and may cause [network splits](https://paulkernfeld.com/2016/01/15/bitcoin-cap-theorem.html), providing wallets out of date information and/or rolling back transactions. Since no one wants to have their assets sieged at will by an angry mob, this situation jeopardizes Bitcoin's price. Many [professionals](https://www.youtube.com/watch?v=pcToFASnyrc) are aware and have been warning about these issues. Hackers & Bitcoin salesepeople would like to keep the following information out of sight because it might kill their golden goose.
 
 ## Overview
 
-Bitcoin's open nature is touted as a feature, allowing anyone with internet access to participate in various ways. Send & receive transactions or submit & receive information about the other participants in the network. In reality it is the achilles heel because activists can use that to cancel it in various ways. For example it would be easy to point out the hypocracy of Amazon providing services to nearly thousand bitcoin nodes while touting their [ESG goals](https://aws.amazon.com/blogs/enterprise-strategy/it-and-esg-part-two-how-it-can-and-must-further-the-companys-esg-efforts/) and buying [carbon credits](https://www.geekwire.com/2020/amazon-pledges-10m-forest-preservation-carbon-offsets-appalachians/). About 25%-30% of full-node servers are hosted in large hosting providers such as Amazon, Google, Microsoft, Hetzner, OVH, Linode & Digital Ocean. I suppose their terms of service are subject to [change at will](https://edition.cnn.com/2021/01/09/tech/parler-suspended-apple-app-store/index.html).
-Bitcoin [pollutes](https://digiconomist.net/bitcoin-energy-consumption) the world shared by all of us, some activists may decide to pollute back. They can flood the network with garbage information and consume all of the availabe resources. Every network and computer system has limited resources such as bandwidth, memory and computing power. In order to estimate the risk, we need to estimate the different capacities in the system and find the ones that are the easiest to overwhelm.
+Bitcoin's open nature is touted as a feature, allowing anyone with internet access to participate in various ways. Send & receive transactions or submit & receive information about the other participants in the network. In reality it is the achilles heel because activists can use that to cancel it in various ways. For example it would be easy to point out the hypocracy of Amazon providing services to nearly thousand bitcoin nodes while touting their [ESG goals](https://aws.amazon.com/blogs/enterprise-strategy/it-and-esg-part-two-how-it-can-and-must-further-the-companys-esg-efforts/) and buying [carbon credits](https://www.geekwire.com/2020/amazon-pledges-10m-forest-preservation-carbon-offsets-appalachians/). About 25%-30% of full-node servers are hosted in large hosting providers such as Amazon, Google, Microsoft, Hetzner, OVH, Linode & Digital Ocean. I suppose their terms of service are subject to [change at will](https://edition.cnn.com/2021/01/09/tech/parler-suspended-apple-app-store/index.html). Cancelling hosted nodes would take the stable, reliable part of the network away leaving it even more vulnerable. We should all ask these companies how hosting Bitcoin is aligned with their sustainability goals.
+Bitcoin [pollutes](https://digiconomist.net/bitcoin-energy-consumption) the world shared by all of us, some activists may decide take matters to their own hand and pollute back. They can flood the network with garbage information and consume all of the availabe resources, creating the aformentioned outages. Every network and computer system has limited resources such as bandwidth, memory and computing power. In order to estimate the risk, we need to estimate the different capacities in the system and find the ones that are the easiest to overwhelm. 
 
 ## Estimating networks capacity
 The myth that Bitcoin's network has massive capacities relies on technical slight of hand. The network is comprised of three different nodes which contribute and consume different resources to the network.
@@ -14,7 +14,7 @@ The myth that Bitcoin's network has massive capacities relies on technical sligh
 2. Wallet Nodes - These are typically short lived nodes, they do not store the full database of around 360GB at the time of writing. These nodes do not publish "NETWORK_NODE" bit to to inform other participants of their limited capacity. 
 3. Miner Nodes - These nodes encompass the majority of resources of the network. Since mining is done in private these are not a target for crowd sourced attack and are irrelevant for the purpose of this article.
 
-It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their network are irrelevant.
+It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes (Full Nodes) is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their network are irrelevant.
 
 ### Full-node resources
 Many are aware of block size wars, where Bitcoin's development team chose to limit the resources needed from each full node in order to lower the barriers for entry for full nodes. There are other limitations in the reference full node implemenation. Limiting node's capacity makes each node vulnerable to various denial of services attacks. Some of the [capacities](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h) of Full Nodes are:
@@ -33,7 +33,7 @@ As we shall see, any of these limitations is subject to various attacks.
 
 ### How many full-nodes are out there?
 We will write our own scraper further on, in the meantime you can look at [bitnodes.io](https://bitcoin.io) or [bitcoinstatus.net](http://bitcoinstatus.net). At the moment of writing, I can reach 5500 nodes that advertise themselves as full nodes using [NODE_NETWORK](https://github.com/bitcoin/bitcoin/blob/b34bf2b42caaee7c8714c1229e877128916d914a/src/protocol.h#L276) bit.
-Bitnodes shows me 8500 because it considers nodes active if they are reachable in the recent past, some are just wallet software that only relays information. You can try it yourself. The following command uses [bitnodes api](https://bitnodes.io/api/) to get the latest list of nodes, we parse it using ruby, then count how many have their "services" field on.
+Bitnodes shows me 8500 because it considers nodes active if they are reachable in the recent past, some are just wallet software that only relays information. You can try it yourself. The following command uses [bitnodes api](https://bitnodes.io/api/) to get the latest list of nodes, we parse it using ruby, then count how many have the last bit on in their advertised "services", meaning they are full nodes.
 ```bash
 curl -H "Accept: application/json; indent=4" https://bitnodes.io/api/v1/snapshots/latest/ |\
  ruby -e 'require("json"); puts JSON.parse(ARGF.read())["nodes"].values.count{|a| a[3] % 2 == 1}'
@@ -166,3 +166,18 @@ Another important point to note is tcpkali has a [bug parsing ipv6 addresses](ht
 
 ### Wasteful nodes
 Part of the reason Bitcoin distributed ledger scales under normal conditions is every node has the capacity to provides about 10x more resources, in the form of incoming connections, then outgoing connections. The protocol does not limit the number of connections from a specific address. Attackers can waste these resources by setting up nodes that can consume incoming or outgoing connections without providing any useful service to the network. For example, Attackers can make two outgoing connections to the same peer, initiate handshake and let the node talk to itself forever. This can be quite effective especially for long lived connections because long lived connections are less likely to be replaced by new ones. Another option is to make nodes that accept connections respond with a handshake in order to be marked as [preferred](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net_processing.cpp#L2576) (more on that later), then reach back to the client and make it talk to itself. In order to demonstrate that, i built a little utility script that can generate bitcoin messages
+
+```bash
+    echo Publishing $1 to $ip:$port
+    (
+    # Send initial version message and wait for supposed verack
+    ./msgmaker/make.rb version -s 5;
+    # Send rest of handshake
+    ./msgmaker/make.rb wtxidrelay;
+    ./msgmaker/make.rb sendaddrv2
+    ./msgmaker/make.rb verack;
+    # Send the address we want to publish
+    echo $addr_json | ./msgmaker/make.rb addrv2 -s 5
+    ) | nc $ip $port > /dev/null&
+ ```
+
