@@ -1,23 +1,23 @@
 # Cancelling Bitcoin - Definitive How To guide
 ## TLDR
-Bitcoin wastes immense amounts of energy. It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society, using the methods described below to create long running outages of Bitcoin's network. This would render private wallets unusable for long periods at a time and may cause [network splits](https://paulkernfeld.com/2016/01/15/bitcoin-cap-theorem.html), providing wallets out of date information and/or rolling back transactions. Since no one wants to have their assets sieged at will by an angry mob, this situation jeopardizes Bitcoin's price. Many [professionals](https://www.youtube.com/watch?v=pcToFASnyrc) are aware and have been warning about these issues. Hackers & Bitcoin salesepeople would like to keep the following information out of sight because it might kill their golden goose.
+Bitcoin wastes immense amounts of [energy](https://digiconomist.net/bitcoin-energy-consumption). It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society, using [Elon](https://github.com/tsubery/elon) to create long running outages of Bitcoin's network. This would render private wallets, where most of the "value" is stored, unusable for long periods at a time. When holders will realize access to their assets can be controlled by angry mobs they will be less inclined to use it as store of value. [Professionals](https://www.youtube.com/watch?v=pcToFASnyrc) are aware and have been warning about these issues. Hackers & Bitcoin salesepeople would like to keep the following information out of sight because it might kill their golden goose.
 
 ## Overview
 
-Bitcoin's open nature is touted as a feature, allowing anyone with internet access to participate in various ways. Send & receive transactions or submit & receive information about the other participants in the network. In reality it is the achilles heel because activists can use that to cancel it in various ways. For example it would be easy to point out the hypocracy of Amazon providing services to nearly thousand bitcoin nodes while touting their [ESG goals](https://aws.amazon.com/blogs/enterprise-strategy/it-and-esg-part-two-how-it-can-and-must-further-the-companys-esg-efforts/) and buying [carbon credits](https://www.geekwire.com/2020/amazon-pledges-10m-forest-preservation-carbon-offsets-appalachians/). About 25%-30% of full-node servers are hosted in large hosting providers such as Amazon, Google, Microsoft, Hetzner, OVH, Linode & Digital Ocean. I suppose their terms of service are subject to [change at will](https://edition.cnn.com/2021/01/09/tech/parler-suspended-apple-app-store/index.html). Cancelling hosted nodes would take the stable, reliable part of the network away leaving it even more vulnerable. We should all ask these companies how hosting Bitcoin is aligned with their sustainability goals.
-Bitcoin [pollutes](https://digiconomist.net/bitcoin-energy-consumption) the world shared by all of us, some activists may decide take matters to their own hand and pollute back. They can flood the network with garbage information and consume all of the availabe resources, creating the aformentioned outages. Every network and computer system has limited resources such as bandwidth, memory and computing power. In order to estimate the risk, we need to estimate the different capacities in the system and find the ones that are the easiest to overwhelm. 
+Bitcoin's open nature is touted as a feature, In reality it makes it a sitting duck for various forms of attack. Current information about participants is availabe on [https://bitnodes.io] and [http://bitcoinstatus.net]. Because all the addresses are public, it's easy to see most of the nodes are hosted in data centers such as Amazon, Google, Microsoft, etc. It would be easy to point out the hypocracy of these companies providing services to support bitcoin while publicizing their [ESG goals](https://aws.amazon.com/blogs/enterprise-strategy/it-and-esg-part-two-how-it-can-and-must-further-the-companys-esg-efforts/) and buying [carbon credits](https://www.geekwire.com/2020/amazon-pledges-10m-forest-preservation-carbon-offsets-appalachians/). They have colluded in the past to kick [Parler](https://edition.cnn.com/2021/01/09/tech/parler-suspended-apple-app-store/index.html) and they can do that to bitcoin. 
+Like any distributed computer system, Bitcoin has certain capacities that can be consumed by attackers in order to render services [unavailable](https://en.wikipedia.org/wiki/Denial-of-service_attack) to normal usage. As i will show, this is surprisingly easy to do because Bitcoin sofware has major flaws that I will describe in this article.
 
 ## Estimating networks capacity
-The myth that Bitcoin's network has massive capacities relies on technical slight of hand. The network is comprised of three different nodes which contribute and consume different resources to the network.
+The myth that Bitcoin's network has massive capacity relies on technical slight of hand. The network is comprised of three different nodes which contribute and consume different resources to the network.
 
-1. Full Nodes - These are distributed data stores backed by Level DB. They provide services of data query & propagation.
+1. Full Nodes - These are distributed data stores backed by [Level DB](https://github.com/bitcoin/bitcoin/tree/55a156fca08713b020aafef91f40df8ce4bc3cae/src/leveldb). They provide services of data query & propagation.
 2. Wallet Nodes - These are typically short lived nodes, they do not store the full database of around 360GB at the time of writing. These nodes do not publish "NETWORK_NODE" bit to to inform other participants of their limited capacity. 
 3. Miner Nodes - These nodes encompass the majority of resources of the network. Since mining is done in private these are not a target for crowd sourced attack and are irrelevant for the purpose of this article.
 
-It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes (Full Nodes) is not rewarded at all. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their network are irrelevant.
+It is important to note that adding mining resources to bitcoin is rewarded by design while adding distributed database nodes (Full Nodes) is not profitable. It should surprise no one that as mining network scaled, the resouces for the distributed database node have stayed modest. For a reasonable attacker miners and their network are irrelevant.
 
 ### Full-node resources
-Many are aware of block size wars, where Bitcoin's development team chose to limit the resources needed from each full node in order to lower the barriers for entry for full nodes. There are other limitations in the reference full node implemenation. Limiting node's capacity makes each node vulnerable to various denial of services attacks. Some of the [capacities](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h) of Full Nodes are:
+Many are aware of block size wars, where Bitcoin's development team chose to limit the resources needed from each full node in order to lower the barriers for entry for full nodes. This has been explained as a way to maintain decentralization. There are other limitations in the reference full node implemenation. Limiting node's capacity makes each node vulnerable to various denial of services attacks. Some of the [capacities](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h) of Full Nodes are:
 1. Networking
    1. [125](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L72) simultanous peer connections
    1. [11 of the 125](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L64-L68) Are dedicated for outgoing connections
@@ -29,46 +29,10 @@ Many are aware of block size wars, where Bitcoin's development team chose to lim
    2. Publicly accessible [services](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/addrman.cpp#L288) attribute for each new node
    3. [10 entries](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/addrman.h#L165) in the collision queue.
 
-As we shall see, any of these limitations is subject to various attacks.
+As we shall see, any of these limitations can be attacked using [Elon](https://github.com/tsubery/elon) 
 
 ### How many full-nodes are out there?
-We will write our own scraper further on, in the meantime you can look at [bitnodes.io](https://bitcoin.io) or [bitcoinstatus.net](http://bitcoinstatus.net). At the moment of writing, I can reach 5500 nodes that advertise themselves as full nodes using [NODE_NETWORK](https://github.com/bitcoin/bitcoin/blob/b34bf2b42caaee7c8714c1229e877128916d914a/src/protocol.h#L276) bit.
-Bitnodes shows me 8500 because it considers nodes active if they are reachable in the recent past, some are just wallet software that only relays information. You can try it yourself. The following command uses [bitnodes api](https://bitnodes.io/api/) to get the latest list of nodes, we parse it using ruby, then count how many have the last bit on in their advertised "services", meaning they are full nodes.
-```bash
-curl -H "Accept: application/json; indent=4" https://bitnodes.io/api/v1/snapshots/latest/ |\
- ruby -e 'require("json"); puts JSON.parse(ARGF.read())["nodes"].values.count{|a| a[3] % 2 == 1}'
- ```
- For later usage, let's save the following file as targets.sh and set +x flag.
-```bash
-#!/bin/bash
-
-  # get latest nodes
-curl -H "Accept: application/json; indent=4" https://bitnodes.io/api/v1/snapshots/latest/ |\
-  # pattern for node's keys
-  egrep "\[\$" |\
-  # remove onion addresses
-  grep -v "onion" |\
-  # select the inside of quoted string
-  cut -d'"' -f 2 |\
-  # remove ipv6 notation markers
-  tr -d '[]
-````
-In order to test which ipv4 nodes are availabe an attacker could use the following bash script
-```bash
-#!/bin/bash
-tmpfile=$(mktemp)
-count=0
-timeout=60
-for target in $(./targets.sh); do
-  curl -m $timeout --connect-timeout $timeout $target > /dev/null 2>> $tmpfile &
-  count=$((count+1))
-  sleep 0.005 # ~200 connections per second
-done
-wait
-echo Reached $(grep -c "Empty reply from server" $tmpfile)/$count nodes
-rm $tmpfile
-````
-This scripts counts how many of the nodes are responding to an http requests by closing the connection with an empty reply as the official full node software does. 
+We can use [Elon](https://github.com/tsubery/elon) to recursively crawl bitcoin's network an enumerate all nodes or look at the aformentioned scanners: [bitnodes.io](https://bitnodes.io) or [bitcoinstatus.net](http://bitcoinstatus.net). On bitnodes full nodes have odd number in their advertised services because it's defined as the [first bit](https://github.com/bitcoin/bitcoin/blob/b34bf2b42caaee7c8714c1229e877128916d914a/src/protocol.h#L276) in services field. Other nodes such as wallets are irrelevant for attackers because it's better to focus the efforts on the most constrained part of the network. Because it's common for hosts to have both ipv6 & ipv4 addresses assigned, this will lead to counting the same nodes twice. The resources described above are per node, not per interface. Having said that I estimate about 6,500 nodes at the time of writing. That means about 750k incoming connections, 65k outgoing. Even using general purpose load generation tools such as [tcpkali](https://github.com/satori-com/tcpkali), a single attacker can generate tens of thousands of tcp connections. A small group of attackers can easily consume all incoming/outgoing connections.
 
 #### A trivial attack
 At 200 connections per second, the script above would take about 2 minutes to scan the whole range. An attacker of course could use higher rate to tax the network. Since the network has about 7k-8k available nodes, the incoming connection capacity of the network is about 114 * 8,000, roughly 900,000. That means that 900 activists using this trivial script at a pace of 1000 connections per second continously could consume much of the incoming connection capacity of the whole network.
