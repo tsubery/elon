@@ -59,8 +59,14 @@ While the script above are enough for activists to create outages becaues these 
 4. Spam - We spam address book of nodes with our data. Might be the most effective method. See segement about Address Manager
 
 ### Targets
-[Elon](https://github.com/tsubery/elon) supports getting targets from various sources, internal crawler, bitnodes.io api, bitcoinstatus.net or [DNS seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) used by "official" bitcoin sofware, it is used the [first time or runs out of peers](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.cpp#L1608). Kindly maintained by a group of randos
-In order to have indepnedent visibility into the network, we should use our own crawlerer. It will recoursively ask nodes for their peers until no new peers are discovered. Connecting to a node only to ask for a list of peers is an integral part of the how the reference implementation works. When a full node launches for the  it uses these  to find targets to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from. These DNS entries are centrally controlled by some [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
+[Elon](https://github.com/tsubery/elon) supports getting targets from various sources:
+* Internal crawler - Scans nodes recursively and collect latency information from a particular host
+* [Bitnodes.io api](https://bitnodes.io/api/) - See their documentation for more details
+* http://bitcoinstatus.net/active_nodes.json - A list of recently reachable full nodes
+* [DNS seeds](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129) used by "official" bitcoin sofware, it is used the [first time or runs out of peers](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.cpp#L1608). 
+ 
+Connecting to a node only to ask for a list of peers is an integral part of the how the "official" implementation works so we can expect internal crawler to be the most availabel option to collect targets. When a full node launches for the first time it uses this pattern to [solicit](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L175-L178) addresses from peers seeded by DNS entries.
+These DNS entries are centrally controlled a group of [randos](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/chainparams.cpp#L121-L129).
 ```cpp
 vSeeds.emplace_back("seed.bitcoin.sipa.be"); // Pieter Wuille
 vSeeds.emplace_back("dnsseed.bluematt.me"); // Matt Corallo
@@ -73,7 +79,6 @@ vSeeds.emplace_back("dnsseed.emzy.de"); // Stephan Oeste
 vSeeds.emplace_back("seed.bitcoin.wiz.biz"); // Jason Maurice
 ````
 They can obviously collude to send some wallets to a subnetwork. All coiners are equal but some coiners are more equal than others.
-Between these sources attackers can ensure no node is left behind.
 
 ### Bitcoin's Address Manager
 While transactions are determined using expensive consensus mechanism. Node addresses are not constrained. Anyone can send addresses to nodes. There is no consensus mechanism to solve collisions. This [code comment](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/addrman.h#L100-L124) explains Bitcoin naive defense. Key comment is
