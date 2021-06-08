@@ -1,5 +1,5 @@
 # Bitcoin security vulnerabilities
-## TLDR
+## TLDR;
 Bitcoin wastes immense amounts of [energy](https://digiconomist.net/bitcoin-energy-consumption). It's community is complicit with crime and uses divisive marketing tactics. This poses great risk of backlash from the rest of society. For example, using [Elon](https://github.com/tsubery/elon) to create long running outages of Bitcoin's network. This could render private wallets, where most of the "value" is stored, unusable for long periods at a time. When holders will realize access to their assets can be controlled by angry mobs they will be less inclined to use it as store of value. [Professionals](https://www.youtube.com/watch?v=pcToFASnyrc) are aware and have been warning about these issues. Hackers & Bitcoin salesepeople would like to keep the following information out of sight because it might kill their golden goose.
 
 ## Overview
