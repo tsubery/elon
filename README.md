@@ -21,7 +21,7 @@ Some of the [limitations](https://github.com/bitcoin/bitcoin/blob/55a156fca08713
 1. Networking
    1. [125](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L72) Total simultanous peer connections
    3. [10 of the 125](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L64-L68) Are dedicated for outgoing peer connections
-   4. [1](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L68) Dedicated "Feeler" connection to test availability of new addresses
+   4. [1](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L68) Dedicated "Feeler" connection to test reachability of addresses. These occur every [2 minutes](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L68)
    5. [114](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/net.h#L72) Incoming connections
 1. Address Manager
    1. 1024 "[buckets](https://github.com/bitcoin/bitcoin/blob/55a156fca08713b020aafef91f40df8ce4bc3cae/src/addrman.h#L130)" of for storing information about new nodes 
