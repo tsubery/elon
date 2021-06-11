@@ -1,0 +1,3 @@
+ignored_prefixes.txt
+*.log
+targets.json
