@@ -96,7 +96,8 @@ class Elon
         end
       end.parse!
 
-      if options[:kali_connections].to_i > 0 && options[:flood_threshold]
+      if options[:kali_connections].to_i > 0 && options[:flood_threshold] > 0
+        p options
         puts STDERR, "Only ruby crawler measures latency for flooding"
         exit(1)
       end

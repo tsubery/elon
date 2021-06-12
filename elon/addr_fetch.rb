@@ -87,7 +87,9 @@ class Elon
           send_data(message.serialize)
         end
       end
-      if !@flooding && pings_left <= 0 &&
+      if !@flooding &&
+          pings_left <= 0 &&
+          publish_messages.empty? &&
           (addresses.count > RELAY_ADDRESSES || !addrfetch)
         # Our work is done
         close_connection
